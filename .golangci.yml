@@ -1,0 +1,85 @@
+version: "2"
+
+# Report every occurrence. The defaults (max-same-issues: 3) hide duplicates,
+# which makes a lint failure look smaller than it is.
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - misspell
+    - gocritic
+    - gocyclo
+    - revive
+    - prealloc
+    # Security footguns (unsafe conversions, weak randomness, etc.).
+    - gosec
+    # Error-handling discipline: %w-wrapped errors must be compared with
+    # errors.Is/As, and sentinel errors must be named Err*.
+    - errorlint
+    - errname
+    - nilerr
+    - nilnesserr
+    # Correctness footguns.
+    - asasalint
+    - reassign
+    - usestdlibvars
+    - copyloopvar
+    - intrange
+    - makezero
+    - wastedassign
+    - unconvert
+    # Avoids extra allocations in the mapping hot paths.
+    - perfsprint
+    # Keep //nolint directives specific and explained.
+    - nolintlint
+  settings:
+    gocyclo:
+      min-complexity: 15
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+    errcheck:
+      # Off for mapper: the registry is keyed by the exact (src, dst) type pair,
+      # so the `.(S)` / `.(D)` assertions on the mapping hot path cannot fail,
+      # and a comma-ok check there would only add overhead.
+      check-type-assertions: false
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    rules:
+      - linters:
+          - errcheck
+        path: _test\.go
+      - linters:
+          - errcheck
+        path: examples/
+      # Tests may assert on unwrapped errors and skip some checks that
+      # wouldn't be acceptable in code that ships to consumers.
+      - linters:
+          - errorlint
+          - gosec
+          - intrange
+          - perfsprint
+        path: _test\.go
+      # Examples are illustrative, not part of the public API surface.
+      - linters:
+          - gosec
+          - perfsprint
+        path: examples/
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true

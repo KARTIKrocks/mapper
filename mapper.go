@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sync"
@@ -134,7 +135,7 @@ func MapFrom[D any](m *Mapper, src any) D {
 func MapErrFrom[D any](m *Mapper, src any) (D, error) {
 	var zero D
 	if src == nil {
-		return zero, fmt.Errorf("mapper: source must not be nil")
+		return zero, errors.New("mapper: source must not be nil")
 	}
 	key := typePair{
 		src: reflect.TypeOf(src),
